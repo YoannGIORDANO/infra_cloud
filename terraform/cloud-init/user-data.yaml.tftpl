@@ -1,0 +1,17 @@
+#cloud-config
+hostname: ${hostname}
+users:
+  - name: devops
+    groups: [sudo]
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    shell: /bin/bash
+    ssh_authorized_keys:
+      - ${ssh_public_key}
+package_update: true
+package_upgrade: true
+packages:
+  - qemu-guest-agent
+  - python3
+runcmd:
+  - systemctl enable qemu-guest-agent
+  - systemctl start qemu-guest-agent
