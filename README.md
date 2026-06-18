@@ -1,70 +1,83 @@
 # Infrastructure Wiki.js — Déploiement IaC
 
-Déploiement automatisé et reproductible d'une infrastructure web (Wiki.js) sur Proxmox, via **cloud-init**, **Terraform/OpenTofu** et **Ansible**.
+Déploiement automatisé et reproductible d'une infrastructure web (Wiki.js) sur Proxmox, via **cloud-init**, **Terraform/OpenTofu** et **Ansible**. Conçu pour être multi-environnement (dev/prod) et multi-fournisseur (Proxmox/Azure).
 
 ## Architecture
 
-Deux machines virtuelles créées et configurées entièrement par le code :
-
 | VM | Rôle | Logiciels |
 | :-- | :-- | :-- |
-| `wiki-web` | Serveur web | Wiki.js (Node.js) + Nginx (reverse proxy) |
+| `wiki-web` | Serveur web | Wiki.js (Node.js) + Nginx |
 | `wiki-db` | Base de données | PostgreSQL |
 
-Le site est accessible publiquement via une redirection de port vers le port 80 de `wiki-web`.
+Site exposé publiquement via une redirection de port vers le port 80 de `wiki-web`.
 
 ## Prérequis
 
-- OpenTofu (ou Terraform) et Ansible installés
+- OpenTofu (ou Terraform) et Ansible
 - Un accès à un serveur Proxmox (API + SSH)
 - Une paire de clés SSH
 
 ## Structure du dépôt
 
     infra-wiki/
-    ├── terraform/        # création des VM (cloud-init + Terraform)
-    │   ├── providers.tf
-    │   ├── variables.tf
-    │   ├── main.tf
-    │   ├── outputs.tf
-    │   └── cloud-init/
-    ├── ansible/          # configuration des applications
-    │   ├── inventory.ini
+    ├── terraform/            # déploiement Proxmox
+    │   ├── cloud-init/       # bootstrap des VM (partagé)
+    │   ├── environments/     # dev.tfvars, prod.tfvars
+    │   ├── templates/        # modèle d'inventaire Ansible
+    │   └── azure/            # déploiement Azure (multi-fournisseur)
+    ├── ansible/              # configuration applicative
     │   ├── playbook.yml
-    │   ├── group_vars/
-    │   └── roles/        # common, postgresql, wikijs, nginx
-    └── screenshot/       # captures des déploiements réussis
+    │   ├── group_vars/       # variables + secret chiffré (Vault)
+    │   └── roles/            # common, postgresql, wikijs, nginx, firewall
+    └── screenshot/           # preuves de déploiement
 
 ## Déploiement
 
 ### 1. Configurer les accès
 
-Créer `terraform/terraform.tfvars` (non versionné) à partir de `terraform.tfvars.example`, avec vos valeurs réelles (endpoint, token API, clé publique).
+Créer `terraform/terraform.tfvars` à partir de `terraform.tfvars.example` (endpoint, token API, clé SSH publique).
 
 ### 2. Créer les VM (Terraform)
 
     cd terraform
     tofu init
-    tofu plan
-    tofu apply
+    tofu workspace new prod        # ou: tofu workspace select prod
+    tofu apply -var-file=environments/prod.tfvars
 
-Les IP des VM s'affichent en sortie.
+L'inventaire Ansible (`ansible/inventory-prod.ini`) est **généré automatiquement** avec les IP des VM.
 
 ### 3. Configurer les applications (Ansible)
 
     cd ../ansible
-    ansible-galaxy collection install community.postgresql
-    ansible-playbook playbook.yml
+    ansible-galaxy collection install community.postgresql community.general
+    ansible-playbook -i inventory-prod.ini playbook.yml
 
-Le mot de passe de la base est chiffré avec **Ansible Vault**. Le fichier `.vault_pass` (non versionné) doit contenir le mot de passe du vault, fourni séparément.
+Le mot de passe de la base est chiffré avec **Ansible Vault** (`.vault_pass` non versionné, fourni séparément).
 
 ### 4. Accéder au site
 
-Ouvrir dans un navigateur : `http://IP_PUBLIQUE:4080/`
+Ouvrir : `http://IP_PUBLIQUE:4080/`
+
+## Environnements (dev / prod)
+
+Le même code déploie plusieurs environnements via les **workspaces** Terraform :
+
+    tofu workspace select dev
+    tofu apply -var-file=environments/dev.tfvars
+
+Chaque environnement a son propre état et ses propres VM (IDs distincts).
 
 ## Sécurité
 
 - Secrets (token, mots de passe, clés) exclus du dépôt via `.gitignore`
 - Mot de passe de la base chiffré avec Ansible Vault
-- PostgreSQL accessible uniquement depuis `wiki-web` (règle pg_hba)
-- Wiki.js écoute en local (127.0.0.1), exposé uniquement via Nginx
+- Pare-feu **ufw** : seuls SSH et HTTP exposés ; PostgreSQL joignable uniquement depuis `wiki-web`
+- Wiki.js écoute en `127.0.0.1`, exposé uniquement via Nginx
+
+## Multi-fournisseur (Proxmox / Azure)
+
+- `terraform/` : déploiement **Proxmox** (production)
+- `terraform/azure/` : déploiement équivalent **Azure** (module azurerm), même cloud-init
+- `ansible/` : configuration **identique** quel que soit le fournisseur
+
+Seul le module Terraform change selon le fournisseur. Ansible ne connaît que des IP et du SSH.
