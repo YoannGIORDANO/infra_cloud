@@ -5,6 +5,9 @@
   roles:
     - common
     - postgresql
+    - role: firewall
+      firewall_allowed:
+        - { port: "5432", src: "{{ hostvars['wiki-web'].ansible_host }}" }
 
 - name: Configurer le serveur web
   hosts: web
@@ -13,3 +16,6 @@
     - common
     - wikijs
     - nginx
+    - role: firewall
+      firewall_allowed:
+        - { port: "80" }

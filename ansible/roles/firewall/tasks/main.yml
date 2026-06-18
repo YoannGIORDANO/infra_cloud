@@ -1,0 +1,33 @@
+---
+- name: Installer ufw
+  apt:
+    name: ufw
+    state: present
+
+- name: Autoriser SSH (en premier, pour ne pas se verrouiller)
+  community.general.ufw:
+    rule: allow
+    port: "22"
+    proto: tcp
+
+- name: Autoriser les ports specifiques a l'hote
+  community.general.ufw:
+    rule: allow
+    port: "{{ item.port }}"
+    proto: tcp
+    src: "{{ item.src | default(omit) }}"
+  loop: "{{ firewall_allowed | default([]) }}"
+
+- name: Politique par defaut - refuser l'entrant
+  community.general.ufw:
+    direction: incoming
+    policy: deny
+
+- name: Politique par defaut - autoriser le sortant
+  community.general.ufw:
+    direction: outgoing
+    policy: allow
+
+- name: Activer ufw
+  community.general.ufw:
+    state: enabled
