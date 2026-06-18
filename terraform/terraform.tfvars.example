@@ -1,0 +1,4 @@
+proxmox_endpoint  = "https://IP_DU_PROXMOX:4006/"
+proxmox_api_token = "user@pam!token=SECRET_ICI"
+proxmox_node      = "pve"
+ssh_public_key    = "ssh-ed25519 VOTRE_CLE_PUBLIQUE"
