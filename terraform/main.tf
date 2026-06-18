@@ -2,7 +2,7 @@ resource "proxmox_virtual_environment_download_file" "ubuntu_cloud" {
   content_type = "iso"
   datastore_id = var.datastore_images
   node_name    = var.proxmox_node
-  file_name    = "jammy-server-cloudimg-amd64.img"
+  file_name    = "jammy-server-cloudimg-amd64-${var.environment}.img"
   url          = "https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.img"
 }
 
@@ -12,9 +12,9 @@ resource "proxmox_virtual_environment_file" "cloud_init" {
   datastore_id = var.datastore_images
   node_name    = var.proxmox_node
   source_raw {
-    file_name = "cloud-init-${each.key}.yaml"
+    file_name = "cloud-init-${var.environment}-${each.key}.yaml"
     data = templatefile("${path.module}/cloud-init/user-data.yaml.tftpl", {
-      hostname       = each.key
+      hostname       = "${var.environment}-${each.key}"
       ssh_public_key = var.ssh_public_key
     })
   }
@@ -22,9 +22,10 @@ resource "proxmox_virtual_environment_file" "cloud_init" {
 
 resource "proxmox_virtual_environment_vm" "vm" {
   for_each  = var.vms
-  name      = each.key
+  name      = "${var.environment}-${each.key}"
   vm_id     = each.value.vmid
   node_name = var.proxmox_node
+  tags      = [var.environment, "wiki", each.key]
 
   agent { enabled = true }
 
@@ -37,7 +38,7 @@ resource "proxmox_virtual_environment_vm" "vm" {
 
   disk {
     datastore_id = var.datastore_disks
-    file_id  = proxmox_virtual_environment_download_file.ubuntu_cloud.id
+    file_id      = proxmox_virtual_environment_download_file.ubuntu_cloud.id
     interface    = "scsi0"
     size         = each.value.disk
   }

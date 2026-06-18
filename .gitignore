@@ -14,3 +14,10 @@ Thumbs.db
 # Ansible
 *.retry
 .vault_pass
+
+# Definitions d'environnement (pas de secrets)
+!terraform/environments/dev.tfvars
+!terraform/environments/prod.tfvars
+
+# Etat des workspaces
+terraform.tfstate.d/

@@ -31,6 +31,11 @@ variable "ssh_public_key" {
   type = string
 }
 
+variable "environment" {
+  type        = string
+  description = "Nom de l'environnement (dev ou prod)"
+}
+
 variable "vms" {
   type = map(object({
     vmid   = number
@@ -38,8 +43,4 @@ variable "vms" {
     memory = number
     disk   = number
   }))
-  default = {
-    "wiki-web" = { vmid = 201, cores = 2, memory = 4096, disk = 30 }
-    "wiki-db"  = { vmid = 202, cores = 2, memory = 4096, disk = 30 }
-  }
 }
