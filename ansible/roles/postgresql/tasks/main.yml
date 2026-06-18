@@ -1,0 +1,48 @@
+---
+- name: Installer PostgreSQL
+  apt:
+    name:
+      - postgresql
+      - python3-psycopg2
+    state: present
+
+- name: Demarrer et activer PostgreSQL
+  service:
+    name: postgresql
+    state: started
+    enabled: yes
+
+- name: Creer l'utilisateur Wiki.js
+  become: true
+  become_user: postgres
+  community.postgresql.postgresql_user:
+    name: "{{ db_user }}"
+    password: "{{ db_password }}"
+    state: present
+
+- name: Creer la base Wiki.js (proprietaire = utilisateur Wiki.js)
+  become: true
+  become_user: postgres
+  community.postgresql.postgresql_db:
+    name: "{{ db_name }}"
+    owner: "{{ db_user }}"
+    state: present
+
+- name: Autoriser wiki-web a se connecter (pg_hba)
+  become: true
+  become_user: postgres
+  community.postgresql.postgresql_pg_hba:
+    dest: /etc/postgresql/14/main/pg_hba.conf
+    contype: host
+    databases: "{{ db_name }}"
+    users: "{{ db_user }}"
+    source: "{{ hostvars['wiki-web'].ansible_host }}/32"
+    method: md5
+  notify: restart postgresql
+
+- name: PostgreSQL ecoute sur le reseau
+  lineinfile:
+    path: /etc/postgresql/14/main/postgresql.conf
+    regexp: '^#?listen_addresses'
+    line: "listen_addresses = '*'"
+  notify: restart postgresql

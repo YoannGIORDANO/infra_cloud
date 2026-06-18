@@ -1,0 +1,3 @@
+db_name: wikijs
+db_user: wikijs
+db_host: "{{ hostvars['wiki-db'].ansible_host }}"

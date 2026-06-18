@@ -10,3 +10,7 @@ id_rsa.pub
 wiki_key*
 .DS_Store
 Thumbs.db
+
+# Ansible
+*.retry
+.vault_pass

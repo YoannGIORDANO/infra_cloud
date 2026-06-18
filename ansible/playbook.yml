@@ -1,0 +1,7 @@
+---
+- name: Configurer la base de donnees
+  hosts: db
+  become: true
+  roles:
+    - common
+    - postgresql
