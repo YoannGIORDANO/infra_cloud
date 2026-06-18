@@ -4,6 +4,9 @@ terraform {
       source  = "bpg/proxmox"
       version = "~> 0.66"
     }
+    local = {
+      source = "hashicorp/local"
+    }
   }
 }
 
@@ -15,7 +18,6 @@ provider "proxmox" {
   ssh {
     agent    = true
     username = "root"
-
     node {
       name    = var.proxmox_node
       address = "82.64.141.52"
