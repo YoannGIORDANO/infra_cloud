@@ -1,0 +1,42 @@
+---
+- name: Ajouter le depot Node.js 22
+  shell: curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
+  args:
+    creates: /etc/apt/sources.list.d/nodesource.list
+
+- name: Installer Node.js
+  apt:
+    name: nodejs
+    state: present
+    update_cache: yes
+
+- name: Creer le dossier Wiki.js
+  file:
+    path: /opt/wikijs
+    state: directory
+
+- name: Telecharger et extraire Wiki.js
+  unarchive:
+    src: https://github.com/Requarks/wiki/releases/latest/download/wiki-js.tar.gz
+    dest: /opt/wikijs
+    remote_src: yes
+    creates: /opt/wikijs/server
+
+- name: Deposer la configuration Wiki.js
+  template:
+    src: config.yml.j2
+    dest: /opt/wikijs/config.yml
+  notify: restart wikijs
+
+- name: Creer le service systemd Wiki.js
+  template:
+    src: wikijs.service.j2
+    dest: /etc/systemd/system/wikijs.service
+  notify: restart wikijs
+
+- name: Activer et demarrer Wiki.js
+  systemd:
+    name: wikijs
+    enabled: yes
+    state: started
+    daemon_reload: yes

@@ -1,0 +1,24 @@
+---
+- name: Installer Nginx
+  apt:
+    name: nginx
+    state: present
+
+- name: Configurer le reverse proxy
+  template:
+    src: wikijs.conf.j2
+    dest: /etc/nginx/sites-available/wikijs.conf
+  notify: reload nginx
+
+- name: Activer le site
+  file:
+    src: /etc/nginx/sites-available/wikijs.conf
+    dest: /etc/nginx/sites-enabled/wikijs.conf
+    state: link
+  notify: reload nginx
+
+- name: Desactiver le site par defaut
+  file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+  notify: reload nginx
