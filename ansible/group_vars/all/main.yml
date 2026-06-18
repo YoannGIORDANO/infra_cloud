@@ -1,3 +1,4 @@
+ # Paramètres partagés par les deux rôles principaux: base de données et application Wiki.js.
 db_name: wikijs
 db_user: wikijs
 db_host: "{{ hostvars['wiki-db'].ansible_host }}"

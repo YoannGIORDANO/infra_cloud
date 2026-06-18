@@ -1,4 +1,5 @@
 resource "proxmox_virtual_environment_download_file" "ubuntu_cloud" {
+  # Image Ubuntu Cloud utilisée comme base commune pour les deux VM.
   content_type = "iso"
   datastore_id = var.datastore_images
   node_name    = var.proxmox_node
@@ -7,6 +8,7 @@ resource "proxmox_virtual_environment_download_file" "ubuntu_cloud" {
 }
 
 resource "proxmox_virtual_environment_file" "cloud_init" {
+  # Un fichier cloud-init par VM permet de personnaliser le hostname sans dupliquer le template.
   for_each     = var.vms
   content_type = "snippets"
   datastore_id = var.datastore_images
@@ -21,6 +23,7 @@ resource "proxmox_virtual_environment_file" "cloud_init" {
 }
 
 resource "proxmox_virtual_environment_vm" "vm" {
+  # Chaque entrée de var.vms devient une VM Proxmox avec le même socle, mais des ressources dédiées.
   for_each  = var.vms
   name      = "${var.environment}-${each.key}"
   vm_id     = each.value.vmid
@@ -44,6 +47,7 @@ resource "proxmox_virtual_environment_vm" "vm" {
   }
 
   initialization {
+    # Le réseau est obtenu en DHCP; Ansible récupère ensuite l'adresse via l'inventaire généré.
     datastore_id = var.datastore_disks
     ip_config {
       ipv4 { address = "dhcp" }

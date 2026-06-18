@@ -1,5 +1,6 @@
 ---
 - name: Configurer la base de donnees
+  # Le serveur PostgreSQL est durci avant le serveur web pour éviter les dépendances croisées au démarrage.
   hosts: db
   become: true
   roles:
@@ -10,6 +11,7 @@
         - { port: "5432", src: "{{ hostvars['wiki-web'].ansible_host }}" }
 
 - name: Configurer le serveur web
+  # Le front expose Wiki.js uniquement via Nginx et récupère la base distante via la config du rôle.
   hosts: web
   become: true
   roles:

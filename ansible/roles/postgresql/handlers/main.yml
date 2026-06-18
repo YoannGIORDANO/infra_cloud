@@ -1,5 +1,6 @@
 ---
 - name: restart postgresql
+  # Le redémarrage applique à la fois pg_hba.conf et postgresql.conf.
   service:
     name: postgresql
     state: restarted

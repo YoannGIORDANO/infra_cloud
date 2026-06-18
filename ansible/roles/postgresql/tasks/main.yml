@@ -1,5 +1,6 @@
 ---
 - name: Installer PostgreSQL
+  # Le serveur et le connecteur Python sont requis pour la configuration locale de la base.
   apt:
     name:
       - postgresql
@@ -7,12 +8,14 @@
     state: present
 
 - name: Demarrer et activer PostgreSQL
+  # Le service doit être actif avant de créer l'utilisateur et la base.
   service:
     name: postgresql
     state: started
     enabled: yes
 
 - name: Creer l'utilisateur Wiki.js
+  # L'utilisateur de base de données est séparé du compte système.
   become: true
   become_user: postgres
   community.postgresql.postgresql_user:
@@ -21,6 +24,7 @@
     state: present
 
 - name: Creer la base Wiki.js (proprietaire = utilisateur Wiki.js)
+  # La base appartient au compte applicatif pour limiter les privilèges.
   become: true
   become_user: postgres
   community.postgresql.postgresql_db:
@@ -29,6 +33,7 @@
     state: present
 
 - name: Autoriser wiki-web a se connecter (pg_hba)
+  # Seule l'IP de wiki-web est autorisée à joindre PostgreSQL.
   become: true
   become_user: postgres
   community.postgresql.postgresql_pg_hba:
@@ -41,6 +46,7 @@
   notify: restart postgresql
 
 - name: PostgreSQL ecoute sur le reseau
+  # PostgreSQL doit accepter les connexions TCP pour fonctionner depuis l'autre VM.
   lineinfile:
     path: /etc/postgresql/14/main/postgresql.conf
     regexp: '^#?listen_addresses'

@@ -1,4 +1,5 @@
 #cloud-config
+# Création d'un compte d'administration prêt pour Ansible.
 hostname: ${hostname}
 users:
   - name: devops
@@ -9,9 +10,11 @@ users:
       - ${ssh_public_key}
 package_update: true
 package_upgrade: true
+# Paquets minimaux nécessaires au bootstrap Ansible et à la VM Proxmox.
 packages:
   - qemu-guest-agent
   - python3
 runcmd:
+  # Le guest agent doit être actif pour que Proxmox remonte correctement l'état et l'IP.
   - systemctl enable qemu-guest-agent
   - systemctl start qemu-guest-agent

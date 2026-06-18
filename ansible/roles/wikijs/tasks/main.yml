@@ -1,21 +1,25 @@
 ---
 - name: Ajouter le depot Node.js 22
+  # Wiki.js a besoin d'une version récente de Node.js; le script NodeSource prépare le dépôt officiel.
   shell: curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
   args:
     creates: /etc/apt/sources.list.d/nodesource.list
 
 - name: Installer Node.js
+  # Node.js est le runtime de l'application Wiki.js.
   apt:
     name: nodejs
     state: present
     update_cache: yes
 
 - name: Creer le dossier Wiki.js
+  # L'application est déployée dans /opt pour rester isolée du système.
   file:
     path: /opt/wikijs
     state: directory
 
 - name: Telecharger et extraire Wiki.js
+  # L'archive officielle fournit le code et les dépendances applicatives.
   unarchive:
     src: https://github.com/Requarks/wiki/releases/latest/download/wiki-js.tar.gz
     dest: /opt/wikijs
@@ -23,18 +27,21 @@
     creates: /opt/wikijs/server
 
 - name: Deposer la configuration Wiki.js
+  # Le fichier YAML injecte la base distante et limite l'écoute à localhost.
   template:
     src: config.yml.j2
     dest: /opt/wikijs/config.yml
   notify: restart wikijs
 
 - name: Creer le service systemd Wiki.js
+  # systemd permet de gérer Wiki.js comme un service persistant.
   template:
     src: wikijs.service.j2
     dest: /etc/systemd/system/wikijs.service
   notify: restart wikijs
 
 - name: Activer et demarrer Wiki.js
+  # Le service est lancé immédiatement après la configuration.
   systemd:
     name: wikijs
     enabled: yes

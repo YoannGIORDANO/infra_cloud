@@ -1,8 +1,10 @@
 [Unit]
+# Le service démarre après le réseau, car il dépend de PostgreSQL distant.
 Description=Wiki.js
 After=network.target
 
 [Service]
+# Wiki.js est lancé en processus simple depuis le répertoire d'installation.
 Type=simple
 ExecStart=/usr/bin/node server
 WorkingDirectory=/opt/wikijs
@@ -11,4 +13,5 @@ Environment=NODE_ENV=production
 User=root
 
 [Install]
+# L'activation au boot maintient le site disponible après redémarrage de la VM.
 WantedBy=multi-user.target

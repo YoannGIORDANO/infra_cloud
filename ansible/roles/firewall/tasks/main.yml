@@ -1,16 +1,19 @@
 ---
 - name: Installer ufw
+  # UFW sert de couche locale simple pour limiter les ports exposés par la VM.
   apt:
     name: ufw
     state: present
 
 - name: Autoriser SSH (en premier, pour ne pas se verrouiller)
+  # SSH doit rester joignable avant de durcir la politique entrante.
   community.general.ufw:
     rule: allow
     port: "22"
     proto: tcp
 
 - name: Autoriser les ports specifiques a l'hote
+  # Les rôles passent leurs besoins réseau dans firewall_allowed.
   community.general.ufw:
     rule: allow
     port: "{{ item.port }}"
@@ -19,15 +22,18 @@
   loop: "{{ firewall_allowed | default([]) }}"
 
 - name: Politique par defaut - refuser l'entrant
+  # Tout ce qui n'est pas explicitement autorisé est bloqué.
   community.general.ufw:
     direction: incoming
     policy: deny
 
 - name: Politique par defaut - autoriser le sortant
+  # Les VM peuvent sortir vers les dépôts, le DNS et les mises à jour.
   community.general.ufw:
     direction: outgoing
     policy: allow
 
 - name: Activer ufw
+  # L'activation intervient en dernier, une fois les règles utiles en place.
   community.general.ufw:
     state: enabled

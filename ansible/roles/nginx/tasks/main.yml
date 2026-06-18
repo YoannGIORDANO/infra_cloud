@@ -1,16 +1,19 @@
 ---
 - name: Installer Nginx
+  # Nginx sert de reverse proxy public devant Wiki.js.
   apt:
     name: nginx
     state: present
 
 - name: Configurer le reverse proxy
+  # Le vhost redirige vers l'application qui écoute seulement en local.
   template:
     src: wikijs.conf.j2
     dest: /etc/nginx/sites-available/wikijs.conf
   notify: reload nginx
 
 - name: Activer le site
+  # Le lien symbolique active le site dans la configuration Nginx.
   file:
     src: /etc/nginx/sites-available/wikijs.conf
     dest: /etc/nginx/sites-enabled/wikijs.conf
@@ -18,6 +21,7 @@
   notify: reload nginx
 
 - name: Desactiver le site par defaut
+  # On retire le site Debian par défaut pour éviter un conflit avec notre vhost.
   file:
     path: /etc/nginx/sites-enabled/default
     state: absent

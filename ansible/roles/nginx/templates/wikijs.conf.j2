@@ -1,8 +1,10 @@
 server {
+    # Nginx écoute en frontal sur le port public 80.
     listen 80 default_server;
     server_name _;
 
     location / {
+        # Tout le trafic HTTP est transféré vers Wiki.js local sur 127.0.0.1:3000.
         proxy_pass http://127.0.0.1:3000;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;

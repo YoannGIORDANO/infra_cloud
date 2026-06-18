@@ -1,5 +1,6 @@
 ---
 - name: reload nginx
+  # Un simple reload suffit après la mise à jour du vhost.
   service:
     name: nginx
     state: reloaded

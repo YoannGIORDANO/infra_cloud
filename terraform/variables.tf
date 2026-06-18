@@ -3,6 +3,7 @@ variable "proxmox_endpoint" {
 }
 
 variable "proxmox_api_token" {
+  # Jeton API Proxmox, marqué sensible pour éviter son affichage dans les sorties.
   type      = string
   sensitive = true
 }
@@ -37,6 +38,7 @@ variable "environment" {
 }
 
 variable "vms" {
+  # Décrit les VM à créer: chaque clé devient un nom logique réutilisé par l'inventaire Ansible.
   type = map(object({
     vmid   = number
     cores  = number

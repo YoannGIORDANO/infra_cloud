@@ -1,5 +1,6 @@
 ---
 - name: restart wikijs
+  # Toute modification de configuration doit relancer l'application.
   systemd:
     name: wikijs
     state: restarted

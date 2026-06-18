@@ -1,10 +1,14 @@
 [web]
+# La VM web héberge Wiki.js et Nginx.
 wiki-web ansible_host=${web_ip}
 
 [db]
+# La VM base de données reste séparée pour limiter le couplage.
 wiki-db ansible_host=${db_ip}
 
 [all:vars]
+# L'utilisateur Ansible correspond au compte créé par cloud-init.
 ansible_user=devops
 ansible_ssh_private_key_file=~/.ssh/wiki_key
+# Le ProxyJump passe par l'hôte Proxmox exposé dans le réseau de gestion.
 ansible_ssh_common_args='-o StrictHostKeyChecking=no -o ProxyJump=root@82.64.141.52:4007'

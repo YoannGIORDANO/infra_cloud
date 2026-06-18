@@ -1,10 +1,12 @@
 ---
 - name: Mettre a jour le cache apt
+  # Le cache doit être frais avant toute installation de paquets.
   apt:
     update_cache: yes
     cache_valid_time: 3600
 
 - name: Installer les paquets de base
+  # Outils génériques nécessaires aux rôles applicatifs et au transport HTTPS.
   apt:
     name:
       - curl
