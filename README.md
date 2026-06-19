@@ -81,3 +81,6 @@ Chaque environnement a son propre état et ses propres VM (IDs distincts).
 - `ansible/` : configuration **identique** quel que soit le fournisseur
 
 Seul le module Terraform change selon le fournisseur. Ansible ne connaît que des IP et du SSH.
+
+## Collaborateur
+Giordano Yoann, Souri Ayoub, Bouchouareb Eddy, Inkari Johan.
